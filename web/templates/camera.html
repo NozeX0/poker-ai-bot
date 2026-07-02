@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Poker AI Bot - Real-Time</title>
+    <link rel="stylesheet" href="/static/css/camera.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Poker AI Bot</h1>
+            <p>Real-Time Camera Analysis</p>
+        </header>
+
+        <main>
+            <!-- Вкладки -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab(event, 'camera')">📷 Камера</button>
+                <button class="tab-btn" onclick="switchTab(event, 'manual')">✍️ Ручной ввод</button>
+                <button class="tab-btn" onclick="switchTab(event, 'history')">📊 История</button>
+            </div>
+
+            <!-- TAB 1: КАМЕРА -->
+            <div id="camera-tab" class="tab-content active">
+                <section class="camera-section">
+                    <h2>📷 Снимите стол</h2>
+                    
+                    <!-- Видео с камеры -->
+                    <div class="video-container">
+                        <video id="video" playsinline autoplay></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                    </div>
+
+                    <!-- Кнопки управления -->
+                    <div class="controls">
+                        <button id="startBtn" class="btn btn-primary" onclick="startCamera()">
+                            📱 Включить камеру
+                        </button>
+                        <button id="captureBtn" class="btn btn-success" onclick="captureAndAnalyze()" style="display:none;">
+                            📸 СНИМОК И АНАЛИЗ
+                        </button>
+                        <button id="stopBtn" class="btn btn-danger" onclick="stopCamera()" style="display:none;">
+                            ⏹️ Остановить
+                        </button>
+                    </div>
+
+                    <!-- Статус -->
+                    <div id="status" class="status"></div>
+                </section>
+            </div>
+
+            <!-- TAB 2: РЕЗУЛЬТАТЫ -->
+            <section id="results" class="results-section" style="display:none;">
+                <h2>✅ АНАЛИЗ РЕЗУЛЬТАТЫ</h2>
+                
+                <!-- Распознанные данные -->
+                <div class="card">
+                    <h3>🎴 Распознанные карты</h3>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <span class="label">Ваши карты:</span>
+                            <span class="value" id="myCards">-</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="label">Борд:</span>
+                            <span class="value" id="boardCards">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Размеры ставок -->
+                <div class="card">
+                    <h3>💰 Размеры ставок</h3>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <span class="label">Банк:</span>
+                            <span class="value" id="potSize">-</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="label">Ставка:</span>
+                            <span class="value" id="betSize">-</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="label">Ваш стек:</span>
+                            <span class="value" id="stackSize">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Возможные комбинации -->
+                <div class="card">
+                    <h3>🎯 Возможные комбинации</h3>
+                    <div id="combinations" class="combinations-list">
+                        <p>Загрузка...</p>
+                    </div>
+                </div>
+
+                <!-- ГЛАВНАЯ РЕКОМЕНДАЦИЯ -->
+                <div class="card recommendation-card">
+                    <h2>🚀 ЧТО ДЕЛАТЬ?</h2>
+                    
+                    <div class="action-block">
+                        <span class="action-label">Действие:</span>
+                        <span class="action-value" id="action">-</span>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="metric-label">Уверенность</span>
+                            <span class="metric-value" id="confidence">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Equity</span>
+                            <span class="metric-value" id="equity">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Win Rate</span>
+                            <span class="metric-value" id="winRate">-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">EV</span>
+                            <span class="metric-value" id="ev">-</span>
+                        </div>
+                    </div>
+
+                    <div class="reasoning">
+                        <p id="reasoning">-</p>
+                    </div>
+
+                    <div id="betSizing" style="display:none;" class="bet-sizing">
+                        <strong>💵 Размер ставки:</strong>
+                        <span id="betValue">-</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="goBackToCamera()">
+                    ← Новый снимок
+                </button>
+            </section>
+
+            <!-- TAB 3: РУЧНОЙ ВВОД -->
+            <div id="manual-tab" class="tab-content">
+                <section class="manual-section">
+                    <h2>✍️ Ручной ввод</h2>
+                    
+                    <form onsubmit="manualAnalyze(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ваши карты *</label>
+                                <input type="text" id="manualCards" placeholder="AS KH" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Борд</label>
+                                <input type="text" id="manualBoard" placeholder="QD JC 9H">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Банк ($) *</label>
+                                <input type="number" id="manualPot" value="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Ставка ($) *</label>
+                                <input type="number" id="manualBet" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Стек ($) *</label>
+                                <input type="number" id="manualStack" value="1000" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">🤖 АНАЛИЗ</button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- TAB 4: ИСТОРИЯ -->
+            <div id="history-tab" class="tab-content">
+                <section class="history-section">
+                    <h2>📊 История анализов</h2>
+                    <button class="btn btn-danger" onclick="clearHistory()">Очистить</button>
+                    <div id="historyList" class="history-list">
+                        <p>История пуста</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer>
+            <p>🎮 Poker AI Bot | Real-Time Camera Analysis | Made with ❤️</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/camera.js"></script>
+</body>
+</html>
