@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Poker AI Bot</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Poker AI Bot</h1>
+            <p>Advanced Strategy Assistant</p>
+        </header>
+
+        <main>
+            <section class="analyzer">
+                <h2>📊 Анализатор ситуации</h2>
+                <form id="analyzeForm">
+                    <div class="row">
+                        <div class="group">
+                            <label>Ваши карты *</label>
+                            <input type="text" id="myCards" placeholder="AS KH" required>
+                        </div>
+                        <div class="group">
+                            <label>Борд</label>
+                            <input type="text" id="board" placeholder="QD JC 9H">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="group">
+                            <label>Банк ($) *</label>
+                            <input type="number" id="pot" placeholder="100" required>
+                        </div>
+                        <div class="group">
+                            <label>Ставка ($) *</label>
+                            <input type="number" id="bet" placeholder="10" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="group">
+                            <label>Ваш стек ($) *</label>
+                            <input type="number" id="stack" placeholder="1000" required>
+                        </div>
+                        <div class="group">
+                            <label>Позиция *</label>
+                            <select id="position" required>
+                                <option value="UTG">UTG</option>
+                                <option value="MP">MP</option>
+                                <option value="CO">CO</option>
+                                <option value="BTN" selected>BTN</option>
+                                <option value="SB">SB</option>
+                                <option value="BB">BB</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="group">
+                            <label>Игроков *</label>
+                            <input type="number" id="players" value="6" min="2" max="9" required>
+                        </div>
+                        <div class="group">
+                            <label>Улица</label>
+                            <select id="street">
+                                <option value="preflop">Preflop</option>
+                                <option value="flop">Flop</option>
+                                <option value="turn">Turn</option>
+                                <option value="river">River</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-analyze">🤖 АНАЛИЗ</button>
+                </form>
+            </section>
+
+            <section class="result" id="result" style="display:none;">
+                <h2>✅ РЕКОМЕНДАЦИЯ</h2>
+                
+                <div class="action-block">
+                    <span class="label">Действие:</span>
+                    <span class="action" id="action"></span>
+                </div>
+
+                <div class="metrics">
+                    <div class="metric">
+                        <span class="label">Уверенность</span>
+                        <span class="value" id="confidence"></span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Equity</span>
+                        <span class="value" id="equity"></span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Win Rate</span>
+                        <span class="value" id="winRate"></span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">EV</span>
+                        <span class="value" id="ev"></span>
+                    </div>
+                </div>
+
+                <div class="reasoning">
+                    <p id="reasoning"></p>
+                </div>
+
+                <div class="bet-size" id="betSize" style="display:none;">
+                    <strong>Размер ставки:</strong> <span id="betValue"></span>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>🤖 Poker AI Bot | Made with ❤️</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
