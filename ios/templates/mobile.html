@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GTO MIND - Real-Time Poker AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--dark);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 16px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .video-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .placeholder {
+            color: #999;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .recommendation-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+            pointer-events: none;
+        }
+
+        .top-info {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-box {
+            background: rgba(46, 204, 113, 0.9);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .action-box.fold {
+            background: rgba(231, 76, 60, 0.9);
+        }
+
+        .action-box.call {
+            background: rgba(230, 126, 34, 0.9);
+        }
+
+        .action-box.check {
+            background: rgba(52, 152, 219, 0.9);
+        }
+
+        .action-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .action-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .reason-box {
+            background: rgba(0, 0, 0, 0.7);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .controls {
+            background: var(--dark);
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .btn-secondary {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        .status-badge.inactive {
+            background: rgba(149, 165, 166, 0.9);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .manual-input {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .manual-input.active {
+            display: flex;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .action-text {
+                font-size: 24px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🧠 GTO MIND AI</h1>
+            <div class="header-subtitle">Real-Time Poker Analysis</div>
+        </div>
+
+        <!-- Video Container -->
+        <div class="video-container">
+            <img id="video-stream" src="" alt="Video Stream">
+            <div class="placeholder" id="placeholder">📹 Нажмите "СТАРТ" для начала анализа</div>
+            <div class="status-badge inactive" id="status-badge">OFFLINE</div>
+            <div class="recommendation-overlay" id="overlay" style="display: none;">
+                <div class="top-info">
+                    <div class="action-box" id="action-box">
+                        <div class="action-text" id="action-text">FOLD</div>
+                        <div class="action-details">
+                            <div class="stat">
+                                Confidence
+                                <span class="stat-value" id="confidence">--</span>
+                            </div>
+                            <div class="stat">
+                                Equity
+                                <span class="stat-value" id="equity">--</span>
+                            </div>
+                            <div class="stat">
+                                EV
+                                <span class="stat-value" id="ev">--</span>
+                            </div>
+                            <div class="stat">
+                                Bet Size
+                                <span class="stat-value" id="bet-size">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reason-box">
+                    <strong>💡 Причина:</strong>
+                    <div id="reason" style="margin-top: 6px;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn btn-primary" id="start-btn" onclick="startAnalysis()">▶ СТАРТ</button>
+            <button class="btn btn-secondary" id="stop-btn" onclick="stopAnalysis()" disabled>⏹ СТОП</button>
+            <button class="btn btn-primary" onclick="toggleManualInput()">⚙ РУЧНОЙ ВВОД</button>
+            <button class="btn btn-secondary" onclick="toggleSettings()">⚡ НАСТРОЙКИ</button>
+        </div>
+    </div>
+
+    <!-- Manual Input Modal -->
+    <div class="manual-input" id="manual-input-modal">
+        <div class="modal-header">
+            <h2>📊 Ручной анализ</h2>
+        </div>
+
+        <div class="form-group">
+            <label>Ваши карты (AS KH)</label>
+            <input type="text" id="manual-cards" placeholder="AS KH" maxlength="5">
+        </div>
+
+        <div class="form-group">
+            <label>Борд (QD JC 9H)</label>
+            <input type="text" id="manual-board" placeholder="QD JC 9H">
+        </div>
+
+        <div class="form-group">
+            <label>Банк ($)</label>
+            <input type="number" id="manual-pot" placeholder="1000" value="1000">
+        </div>
+
+        <div class="form-group">
+            <label>Ставка к коллу ($)</label>
+            <input type="number" id="manual-bet" placeholder="0" value="0">
+        </div>
+
+        <div class="form-group">
+            <label>Мой стек ($)</label>
+            <input type="number" id="manual-stack" placeholder="5000" value="5000">
+        </div>
+
+        <div class="form-group">
+            <label>Позиция</label>
+            <input type="text" id="manual-position" placeholder="button" value="button">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="analyzeManual()">📊 АНАЛИЗ</button>
+            <button class="btn btn-secondary" onclick="toggleManualInput()">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <script>
+        let isAnalyzing = false;
+        let streamInterval;
+
+        async function startAnalysis() {
+            try {
+                const response = await fetch('/api/start-vision', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'started' || data.status === 'already_running') {
+                    isAnalyzing = true;
+                    document.getElementById('start-btn').disabled = true;
+                    document.getElementById('stop-btn').disabled = false;
+                    document.getElementById('status-badge').classList.remove('inactive');
+                    document.getElementById('status-badge').textContent = 'LIVE ANALYSIS';
+                    document.getElementById('placeholder').style.display = 'none';
+                    document.getElementById('overlay').style.display = 'flex';
+
+                    // Запускаем видеопоток
+                    startVideoStream();
+                    
+                    // Обновляем рекомендации
+                    updateRecommendations();
+                }
+            } catch (error) {
+                console.error('Error starting analysis:', error);
+                alert('Ошибка при запуске анализа');
+            }
+        }
+
+        async function stopAnalysis() {
+            try {
+                const response = await fetch('/api/stop-vision', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+
+                isAnalyzing = false;
+                document.getElementById('start-btn').disabled = false;
+                document.getElementById('stop-btn').disabled = true;
+                document.getElementById('status-badge').classList.add('inactive');
+                document.getElementById('status-badge').textContent = 'OFFLINE';
+                document.getElementById('placeholder').style.display = 'block';
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('video-stream').src = '';
+
+                clearInterval(streamInterval);
+            } catch (error) {
+                console.error('Error stopping analysis:', error);
+            }
+        }
+
+        function startVideoStream() {
+            const videoElement = document.getElementById('video-stream');
+            videoElement.src = '/api/stream';
+        }
+
+        async function updateRecommendations() {
+            while (isAnalyzing) {
+                try {
+                    const response = await fetch('/api/recommendation');
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        updateOverlay(data);
+                    }
+                } catch (error) {
+                    console.error('Error updating recommendations:', error);
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        function updateOverlay(recommendation) {
+            const actionBox = document.getElementById('action-box');
+            const action = recommendation.action || 'UNKNOWN';
+            const actions = ['FOLD', 'CALL', 'RAISE', 'CHECK', 'BET'];
+            
+            // Очищаем классы
+            actions.forEach(a => actionBox.classList.remove(a.toLowerCase()));
+            
+            // Добавляем новый класс
+            if (action === 'FOLD') {
+                actionBox.classList.add('fold');
+            } else if (action === 'CALL') {
+                actionBox.classList.add('call');
+            } else if (action === 'CHECK') {
+                actionBox.classList.add('check');
+            }
+
+            document.getElementById('action-text').textContent = action;
+            document.getElementById('confidence').textContent = `${Math.round((recommendation.confidence || 0) * 100)}%`;
+            document.getElementById('equity').textContent = `${(recommendation.equity || 0).toFixed(1)}%`;
+            document.getElementById('ev').textContent = `$${(recommendation.ev || 0).toFixed(0)}`;
+            document.getElementById('bet-size').textContent = `$${(recommendation.bet_size || 0).toFixed(0)}`;
+            document.getElementById('reason').textContent = recommendation.reason || 'Анализ...';
+        }
+
+        function toggleManualInput() {
+            const modal = document.getElementById('manual-input-modal');
+            modal.classList.toggle('active');
+        }
+
+        async function analyzeManual() {
+            const cards = document.getElementById('manual-cards').value.split(' ');
+            const board = document.getElementById('manual-board').value.split(' ').filter(c => c);
+
+            try {
+                const response = await fetch('/api/quick-analysis', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        my_cards: cards,
+                        community_cards: board,
+                        pot: parseInt(document.getElementById('manual-pot').value),
+                        bet: parseInt(document.getElementById('manual-bet').value),
+                        stack: parseInt(document.getElementById('manual-stack').value),
+                        position: document.getElementById('manual-position').value
+                    })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    updateOverlay(data);
+                    toggleManualInput();
+                }
+            } catch (error) {
+                console.error('Error analyzing:', error);
+                alert('Ошибка анализа');
+            }
+        }
+
+        function toggleSettings() {
+            alert('⚙️ Настройки в разработке');
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ GTO MIND AI приложение загружено');
+        });
+    </script>
+</body>
+</html>

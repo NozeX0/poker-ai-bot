@@ -1,0 +1,23 @@
+/* iOS App Styles */
+
+:root {
+    --primary: #2ecc71;
+    --danger: #e74c3c;
+    --warning: #f39c12;
+    --info: #3498db;
+    --dark: #2c3e50;
+    --light: #ecf0f1;
+    --safe-top: max(env(safe-area-inset-top), 12px);
+    --safe-bottom: max(env(safe-area-inset-bottom), 12px);
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -webkit-touch-callout: none;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI';
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+}
