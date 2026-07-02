@@ -1,0 +1,30 @@
+{
+  "name": "poker-ai-bot",
+  "version": "1.0.0",
+  "description": "GTO Poker AI Assistant - Desktop and Mobile",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "nodemon server/index.js",
+    "client:dev": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "mobile": "cd mobile && npm start",
+    "install-all": "npm install && cd client && npm install && cd ../mobile && npm install"
+  },
+  "keywords": ["poker", "gto", "ai", "assistant"],
+  "author": "NozeX0",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "socket.io": "^4.5.4",
+    "sqlite3": "^5.1.6",
+    "axios": "^1.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.0"
+  }
+}
