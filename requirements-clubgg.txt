@@ -1,0 +1,31 @@
+# ClubGG Overlay Requirements
+
+# Flask Web Framework
+Flask==2.3.2
+Flask-CORS==4.0.0
+Werkzeug==2.3.6
+
+# Computer Vision
+opencv-python==4.8.0.74
+opencv-contrib-python==4.8.0.74
+numpy==1.24.3
+
+# Image Processing
+Pillow==10.0.0
+scikit-image==0.21.0
+
+# Screen Capture
+mss==7.0.1
+pyautogui==0.9.53
+
+# OCR
+pytesseract==0.3.10
+easyocr==1.6.2
+
+# Existing poker engine
+pandas==2.0.3
+scipy==1.11.1
+
+# Utilities
+click==8.1.6
+python-dotenv==1.0.0
